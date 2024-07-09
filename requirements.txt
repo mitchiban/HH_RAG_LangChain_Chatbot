@@ -8,3 +8,6 @@ python-dotenv
 
 #repl
 ipython
+
+#for retrival step
+chromadb==0.4.22

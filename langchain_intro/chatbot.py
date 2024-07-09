@@ -8,6 +8,13 @@ from langchain.prompts import (
 )
 from langchain_core.output_parsers import StrOutputParser #new
 
+# add retrieval context
+from langchain_community.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings
+from langchain.schema.runnable import RunnablePassthrough
+
+REVIEWS_CHROMA_PATH = "chroma_data/"
+
 dotenv.load_dotenv()
 
 review_template_str = """Your job is to use patient
@@ -32,7 +39,9 @@ review_human_prompt = HumanMessagePromptTemplate(
         template="{question}",
     )
 )
+
 messages = [review_system_prompt, review_human_prompt]
+
 
 review_prompt_template = ChatPromptTemplate(
     input_variables=["context", "question"],
@@ -41,31 +50,19 @@ review_prompt_template = ChatPromptTemplate(
 
 chat_model = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
 
-review_chain = review_prompt_template | chat_model
+#output_parser = StrOutputParser() #improve response format
 
-"""
-in repl
->>> from langchain_intro.chatbot import review_chain
+reviews_vector_db = Chroma(
+    persist_directory=REVIEWS_CHROMA_PATH,
+    embedding_function=OpenAIEmbeddings()
+)
 
->>> context = "I had a great stay!"
->>> question = "Did anyone have a positive experience?"
+reviews_retriever  = reviews_vector_db.as_retriever(k=10)
 
->>> review_chain.invoke({"context": context, "question": question})
-AIMessage(content='Yes, the patient had a great stay and had a
-positive experience at the hospital.')
-"""
-
-output_parser = StrOutputParser() #improve response format
-
-review_chain = review_prompt_template | chat_model | output_parser
-
-"""
-in repl
->>> from langchain_intro.chatbot import review_chain
-
->>> context = "I had a great stay!"
->>> question = "Did anyone have a positive experience?"
-
->>> review_chain.invoke({"context": context, "question": question})
-Yes, the patient had a great stay and had a positive experience at the hospital.'
-"""
+#review_chain = review_prompt_template | chat_model | output_parser
+review_chain = (
+    {"context": reviews_retriever, "question": RunnablePassthrough()}
+    | review_prompt_template
+    | chat_model
+    | StrOutputParser()
+)
