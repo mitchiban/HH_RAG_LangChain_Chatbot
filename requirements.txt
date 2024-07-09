@@ -11,3 +11,6 @@ ipython
 
 #for retrival step
 chromadb==0.4.22
+
+# for agent step (not in blog)
+langchainhub
