@@ -14,3 +14,6 @@ chromadb==0.4.22
 
 # for agent step (not in blog)
 langchainhub
+
+# for testing
+httpx

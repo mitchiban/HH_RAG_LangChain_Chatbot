@@ -1,12 +1,11 @@
-# chatbot_api/Dockerfile
+[project]
+name = "chatbot_frontend"
+version = "0.1"
+dependencies = [
+   "requests==2.31.0",
+   "streamlit==1.29.0"
+]
 
-FROM python:3.11-slim
+[project.optional-dependencies]
+dev = ["black", "flake8"]
 
-WORKDIR /app
-COPY ./src/ /app
-
-COPY ./pyproject.toml /code/pyproject.toml
-RUN pip install /code/.
-
-EXPOSE 8000
-CMD ["sh", "entrypoint.sh"]
